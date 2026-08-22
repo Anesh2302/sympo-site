@@ -27,13 +27,10 @@ const Experience = () => {
 
     const getEffectiveScrollSpeed = () => {
       const normProgress = ((targetScrollProgress.current % 1) + 1) % 1;
-      if (normProgress >= 0.23 && normProgress <= 0.26) {
-        return scrollSpeed * 0.1;
-      }
-      if (normProgress >= 0.37 && normProgress <= 0.54) {
-        return scrollSpeed * 0.2;
-      }
-      return scrollSpeed * 1.0;
+      const isSlowZone =
+        (normProgress >= 0.23 && normProgress <= 0.26) ||
+        (normProgress >= 0.37 && normProgress <= 0.54);
+      return scrollSpeed * (isSlowZone ? 0.2 : 1.0);
     };
 
     const handleWheel = (e) => {
