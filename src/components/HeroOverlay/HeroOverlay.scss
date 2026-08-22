@@ -1,0 +1,475 @@
+/* ─────────────────────────────────────────────────────────────
+   HeroOverlay — gothic / cybersecurity theme
+   Matches reference image: side nav, title, countdown, about, bottom cards
+   ───────────────────────────────────────────────────────────── */
+
+$gold: #c9a84c;
+$gold-dim: #7a5c20;
+$stone: rgba(10, 8, 5, 0.88);
+$stone-mid: rgba(15, 12, 7, 0.93);
+$border-c: rgba(201, 168, 76, 0.48);
+$dim-text: rgba(210, 188, 135, 0.78);
+$font-h: "Eagle Lake", "Cinzel Decorative", "Palatino Linotype", serif;
+$font-b: "IM Fell English", Georgia, serif;
+$ease: 0.22s ease;
+
+/* Mixin — ornate panel */
+@mixin panel {
+  background: $stone-mid;
+  border: 1px solid $border-c;
+  backdrop-filter: blur(18px) brightness(0.65);
+  box-shadow: 0 0 14px rgba(201, 168, 76, 0.12), inset 0 0 30px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+/* ── Root overlay ── */
+.ho-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  font-family: $font-b;
+  color: $gold;
+
+  /* all direct children can receive clicks */
+  >* {
+    pointer-events: auto;
+  }
+}
+
+/* ════════════════════════════════════════════
+   LEFT SIDE NAV
+   ════════════════════════════════════════════ */
+.ho-sidenav {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  border: none;
+  overflow: hidden;
+  min-width: 138px;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    background: none;
+    border: none;
+    border-bottom: 1px solid rgba(201, 168, 76, 0.10);
+    padding: 13px 18px 13px 14px;
+    cursor: pointer;
+    color: rgba(201, 168, 76, 0.52);
+    font-family: $font-h;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    transition: color $ease, background $ease;
+    white-space: nowrap;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: rgba(201, 168, 76, 0.07);
+      color: $gold;
+
+      .ho-sidenav__icon svg {
+        stroke: $gold;
+      }
+    }
+
+    &.active {
+      background: rgba(201, 168, 76, 0.10);
+      color: $gold;
+
+      .ho-sidenav__icon svg {
+        stroke: $gold;
+      }
+    }
+  }
+
+  &__icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+
+    svg {
+      width: 100%;
+      height: 100%;
+      stroke: rgba(201, 168, 76, 0.50);
+      transition: stroke $ease;
+    }
+  }
+}
+
+/* ════════════════════════════════════════════
+   TOP-CENTER TITLE BLOCK
+   ════════════════════════════════════════════ */
+.ho-title-wrap {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: transparent;
+  padding: 20px 48px 30px;
+  min-width: 380px;
+  text-align: center;
+  pointer-events: none;
+  /* let canvas scroll through title area */
+}
+
+.ho-compass {
+  width: 50px;
+  height: 50px;
+  color: $gold;
+  margin-bottom: -4px;
+  opacity: 0.85;
+  filter: drop-shadow(0 0 6px rgba(201, 168, 76, 0.55));
+  animation: ho-spin 60s linear infinite;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.ho-title__zyverse {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-family: $font-h;
+  font-size: clamp(36px, 6vw, 68px);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  /* metallic gradient text */
+  background: linear-gradient(180deg,
+      #ede0c4 0%,
+      #c8b88a 30%,
+      #9a8055 60%,
+      #c9a84c 82%,
+      #e8cc70 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+}
+
+.ho-dragon-z-mask {
+  display: inline-block;
+  height: clamp(64px, 10vw, 100px);
+  width: clamp(64px, 10vw, 100px);
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  margin-right: -4px;
+  background: linear-gradient(180deg,
+      #ede0c4 0%,
+      #c8b88a 30%,
+      #9a8055 60%,
+      #c9a84c 82%,
+      #e8cc70 100%);
+  -webkit-mask-image: url('/media/dragon-z-transparent.png');
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-image: url('/media/dragon-z-transparent.png');
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+
+.ho-title__2k26-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: -4px;
+}
+
+.ho-title__diamond {
+  color: $gold-dim;
+  font-size: 10px;
+  opacity: 0.85;
+}
+
+.ho-title__2k26 {
+  font-family: $font-h;
+  font-size: clamp(20px, 3.5vw, 44px);
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  color: $gold;
+  line-height: 1;
+}
+
+.ho-title__dept {
+  font-family: $font-h;
+  font-size: clamp(10px, 1.4vw, 14px);
+  letter-spacing: 0.2em;
+  color: #c8b888;
+  margin-top: 10px;
+  text-transform: uppercase;
+}
+
+.ho-title__college {
+  font-family: $font-h;
+  font-size: clamp(7px, 0.9vw, 10px);
+  letter-spacing: 0.15em;
+  color: rgba(185, 165, 110, 0.72);
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+/* ════════════════════════════════════════════
+   TOP-RIGHT COUNTDOWN
+   ════════════════════════════════════════════ */
+.ho-countdown-wrap {
+  margin-top: 24px;
+  min-width: 224px;
+  text-align: center;
+  background: transparent;
+  border: none;
+
+  &__title {
+    font-family: $font-h;
+    font-size: 8.5px;
+    letter-spacing: 0.22em;
+    color: rgba(201, 168, 76, 0.60);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  &__row {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    align-items: stretch;
+  }
+}
+
+.ho-cd-box {
+  background: transparent;
+  border: none;
+  padding: 7px 10px 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 46px;
+
+  &__val {
+    font-family: $font-h;
+    font-size: 22px;
+    color: $gold;
+    line-height: 1;
+    letter-spacing: 0.05em;
+  }
+
+  &__lbl {
+    font-family: $font-h;
+    font-size: 7px;
+    letter-spacing: 0.2em;
+    color: rgba(201, 168, 76, 0.52);
+    margin-top: 5px;
+  }
+}
+
+/* ════════════════════════════════════════════
+   RIGHT ABOUT PANEL
+   ════════════════════════════════════════════ */
+.ho-about {
+  position: absolute;
+  right: 0;
+  /* sits below countdown: ~14px top + ~110px countdown height + 10px gap */
+  top: 140px;
+  width: clamp(210px, 20vw, 268px);
+  padding: 16px 18px 18px;
+  background: transparent;
+  border: none;
+
+  &__header {
+    font-family: $font-h;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: $gold;
+    text-align: center;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  &__divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(201, 168, 76, 0.55), transparent);
+    margin: 0 0 12px;
+  }
+
+  &__text {
+    font-size: 11px;
+    line-height: 1.8;
+    color: $dim-text;
+    text-align: center;
+  }
+
+  &__shield {
+    display: flex;
+    justify-content: center;
+    margin-top: 14px;
+  }
+
+  &__shield-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 34px;
+      height: 34px;
+      stroke: $gold;
+    }
+  }
+}
+
+/* ════════════════════════════════════════════
+   BOTTOM NAVIGATION — transparent, no card
+   ════════════════════════════════════════════ */
+.ho-bottom-nav {
+  position: absolute;
+  bottom: 0;
+  left: 138px;
+  /* clear side nav */
+  right: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 16px 18px;
+}
+
+.ho-bottom-panel {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  background: transparent;
+
+  &__item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(201, 168, 76, 0.55);
+    font-family: $font-h;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    transition: color $ease;
+
+    &:hover {
+      color: $gold;
+
+      .ho-bottom-panel__icon svg {
+        stroke: $gold;
+      }
+    }
+  }
+
+  &__icon {
+    width: 22px;
+    height: 22px;
+
+    svg {
+      width: 100%;
+      height: 100%;
+      stroke: rgba(201, 168, 76, 0.55);
+      transition: stroke $ease;
+    }
+  }
+
+  &__label {
+    line-height: 1;
+  }
+}
+
+/* ════════════════════════════════════════════
+   ANIMATIONS
+   ════════════════════════════════════════════ */
+@keyframes ho-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ho-shield-glow {
+  from {
+    box-shadow: 0 0 4px rgba(201, 168, 76, 0.10);
+  }
+
+  to {
+    box-shadow: 0 0 20px rgba(201, 168, 76, 0.40);
+  }
+}
+
+/* ════════════════════════════════════════════
+   RESPONSIVE
+   ════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .ho-about {
+    display: none;
+  }
+
+  .ho-sidenav {
+    display: none;
+  }
+
+  .ho-bottom-nav {
+    left: 0;
+  }
+
+  .ho-title-wrap {
+    min-width: unset;
+    width: 92vw;
+  }
+}
+
+@media (max-width: 600px) {
+  .ho-title__zyverse {
+    font-size: 32px;
+  }
+
+  .ho-title__2k26 {
+    font-size: 20px;
+  }
+
+  .ho-countdown-wrap {
+    min-width: 160px;
+    margin-top: 16px;
+  }
+
+  .ho-cd-box__val {
+    font-size: 16px;
+  }
+
+  .ho-bottom-panel__item {
+    padding: 10px 6px 12px;
+    font-size: 8px;
+  }
+
+  .ho-bottom-panel__icon {
+    width: 18px;
+    height: 18px;
+  }
+}
