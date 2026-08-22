@@ -1,0 +1,22 @@
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import glsl from "vite-plugin-glsl";
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react(), glsl()],
+  build: {
+    target: "esnext",
+    minify: "esbuild",
+    cssCodeSplit: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          three: ["three"],
+          drei: ["@react-three/drei", "@react-three/fiber"],
+          vendor: ["react", "react-dom", "gsap", "zustand"],
+        },
+      },
+    },
+  },
+});
