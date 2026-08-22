@@ -13,7 +13,7 @@ const Experience = () => {
   const cameraGroup = useRef();
   const [scrollProgress, setscrollProgress] = useState(0);
   const targetScrollProgress = useRef(0);
-  const scrollSpeed = 0.005;
+  const scrollSpeed = 0.01;
   const lerpFactor = 0.1;
   const isSwiping = useRef(false);
   const mousePositionOffset = useRef(new THREE.Vector3());
@@ -25,13 +25,25 @@ const Experience = () => {
   useEffect(() => {
     if (!isExperienceReady) return;
 
+    const getEffectiveScrollSpeed = () => {
+      const normProgress = ((targetScrollProgress.current % 1) + 1) % 1;
+      if (normProgress >= 0.23 && normProgress <= 0.26) {
+        return scrollSpeed * 0.1;
+      }
+      if (normProgress >= 0.37 && normProgress <= 0.54) {
+        return scrollSpeed * 0.2;
+      }
+      return scrollSpeed * 1.0;
+    };
+
     const handleWheel = (e) => {
       if (isModalOpen) return;
       const normalized = normalizeWheel(e);
+      const currentSpeed = getEffectiveScrollSpeed();
 
       targetScrollProgress.current +=
         Math.sign(normalized.pixelY) *
-        scrollSpeed *
+        currentSpeed *
         Math.min(Math.abs(normalized.pixelY) / 100, 1);
     };
 
@@ -63,9 +75,12 @@ const Experience = () => {
 
       if (lastTouchY.current !== null) {
         const deltaY = e.touches[0].clientY - lastTouchY.current;
-        const touchMultiplier = 0.3;
+        // Natural touch scroll: swiping UP (clientY decreases) advances forward (+progress)
+        const touchDelta = -deltaY;
+        const touchMultiplier = 2.0;
+        const currentSpeed = getEffectiveScrollSpeed();
         targetScrollProgress.current +=
-          Math.sign(deltaY) * scrollSpeed * touchMultiplier;
+          (touchDelta / 100) * currentSpeed * touchMultiplier;
       }
       lastTouchY.current = e.touches[0].clientY;
     };
@@ -82,9 +97,10 @@ const Experience = () => {
 
     const handleMouseDrag = (e) => {
       if (!isSwiping.current || e.pointerType === "touch") return;
-      const mouseMultiplier = 0.2;
+      const mouseMultiplier = 0.4;
+      const currentSpeed = getEffectiveScrollSpeed();
       targetScrollProgress.current +=
-        Math.sign(e.movementY) * scrollSpeed * mouseMultiplier;
+        Math.sign(e.movementY) * currentSpeed * mouseMultiplier;
     };
 
     const handleMouseUp = () => {
