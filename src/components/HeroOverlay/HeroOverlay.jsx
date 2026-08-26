@@ -1,0 +1,185 @@
+import React, { useState, useEffect } from "react";
+import "./HeroOverlay.scss";
+
+/* ── Countdown target date ── */
+const TARGET_DATE = new Date("2026-10-15T09:00:00");
+
+function useCountdown(target) {
+  const calc = () => {
+    const diff = Math.max(0, target - Date.now());
+    return {
+      days: Math.floor(diff / 86400000),
+      hours: Math.floor((diff % 86400000) / 3600000),
+      minutes: Math.floor((diff % 3600000) / 60000),
+      seconds: Math.floor((diff % 60000) / 1000),
+    };
+  };
+  const [time, setTime] = useState(calc);
+  useEffect(() => {
+    const id = setInterval(() => setTime(calc()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  return time;
+}
+
+/* ── Inline SVG icons ── */
+const IconHome = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" />
+    <path d="M9 21V12h6v9" />
+  </svg>
+);
+const IconEvents = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" />
+    <path d="M16 2v4M8 2v4M3 10h18" />
+    <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" />
+  </svg>
+);
+const IconSchedule = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 3" />
+  </svg>
+);
+const IconTeam = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="9" cy="7" r="3" />
+    <circle cx="17" cy="9" r="2.5" />
+    <path d="M2 20c0-3.314 3.134-6 7-6s7 2.686 7 6" />
+    <path d="M17 14c2.21 0 4 1.567 4 3.5" />
+  </svg>
+);
+const IconAbout = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 8v1M12 11v5" />
+  </svg>
+);
+
+const IconCompass = () => (
+  <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="24" cy="24" r="20" strokeWidth="0.8" />
+    <polygon points="24,4 27,22 24,26 21,22" fill="currentColor" opacity="0.85" strokeWidth="0.5" />
+    <polygon points="24,44 21,26 24,22 27,26" fill="currentColor" opacity="0.35" strokeWidth="0.5" />
+    <polygon points="4,24 22,21 26,24 22,27" fill="currentColor" opacity="0.35" strokeWidth="0.5" />
+    <polygon points="44,24 26,27 22,24 26,21" fill="currentColor" opacity="0.85" strokeWidth="0.5" />
+    <circle cx="24" cy="24" r="2" fill="currentColor" strokeWidth="0" />
+  </svg>
+);
+
+/* ── Left Side Nav ── */
+const NAV_ITEMS = [
+  { id: "HOME", Icon: IconHome },
+  { id: "EVENTS", Icon: IconEvents },
+  { id: "SCHEDULE", Icon: IconSchedule },
+  { id: "TEAM", Icon: IconTeam },
+  { id: "ABOUT", Icon: IconAbout },
+];
+
+const SideNav = () => {
+  const [active, setActive] = useState("HOME");
+  return (
+    <nav className="ho-sidenav" aria-label="Site navigation">
+      {NAV_ITEMS.map(({ id, Icon }) => (
+        <button
+          key={id}
+          className={"ho-sidenav__item" + (active === id ? " active" : "")}
+          onClick={() => setActive(id)}
+        >
+          <span className="ho-sidenav__icon"><Icon /></span>
+          <span>{id}</span>
+        </button>
+      ))}
+    </nav>
+  );
+};
+
+/* ── Countdown box ── */
+const CdBox = ({ value, label }) => (
+  <div className="ho-cd-box">
+    <span className="ho-cd-box__val">{String(value).padStart(2, "0")}</span>
+    <span className="ho-cd-box__lbl">{label}</span>
+  </div>
+);
+
+/* ── Bottom nav items ── */
+const NAV_LINKS = [
+  { id: "EVENTS", Icon: IconEvents },
+  { id: "SCHEDULE", Icon: IconSchedule },
+  { id: "TEAM", Icon: IconTeam },
+  { id: "ABOUT", Icon: IconAbout },
+];
+
+/* ── Dragon-Z component using official logo ── */
+const DragonZ = () => (
+  <img
+    src="/media/favicon.svg"
+    className="ho-dragon-z-img"
+    alt="Z"
+    style={{
+      height: "clamp(38px, 6.2vw, 72px)",
+      width: "auto",
+      display: "inline-block",
+      verticalAlign: "middle",
+      marginRight: "-2px"
+    }}
+  />
+);
+
+/* ══════════════════════════════════════════
+   Main HeroOverlay component
+   ══════════════════════════════════════════ */
+const HeroOverlay = ({ visible = true }) => {
+  const time = useCountdown(TARGET_DATE);
+  if (!visible) return null;
+
+  return (
+    <div className="ho-root">
+
+      {/* ── Left nav ── */}
+      <SideNav />
+
+      {/* ── Top-center title ── */}
+      <header className="ho-title-wrap">
+        <div className="ho-compass"><IconCompass /></div>
+        <h1 className="ho-title__zyverse">
+          <span className="ho-dragon-z-mask" aria-label="Z" />
+          <span>YVERSE</span>
+        </h1>
+        <div className="ho-title__2k26-row">
+          <span className="ho-title__diamond">◆</span>
+          <span className="ho-title__2k26">2K26</span>
+          <span className="ho-title__diamond">◆</span>
+        </div>
+        <p className="ho-title__dept">DEPT. OF CYBERSECURITY</p>
+        <p className="ho-title__college">SRM VALLIAMMAI ENGINEERING COLLEGE</p>
+        {/* ── Countdown below college ── */}
+        <div className="ho-countdown-wrap">
+          <div className="ho-countdown-wrap__title">EVENT BEGINS IN</div>
+          <div className="ho-countdown-wrap__row">
+            <CdBox value={time.days} label="DAYS" />
+            <CdBox value={time.hours} label="HRS" />
+            <CdBox value={time.minutes} label="MINS" />
+            <CdBox value={time.seconds} label="SECS" />
+          </div>
+        </div>
+      </header>
+
+      {/* ── Bottom nav panel ── */}
+      <nav className="ho-bottom-nav">
+        <div className="ho-bottom-panel">
+          {NAV_LINKS.map(({ id, Icon }) => (
+            <button key={id} className="ho-bottom-panel__item">
+              <span className="ho-bottom-panel__icon"><Icon /></span>
+              <span className="ho-bottom-panel__label">{id}</span>
+            </button>
+          ))}
+        </div>
+      </nav>
+
+    </div>
+  );
+};
+
+export default HeroOverlay;
