@@ -124,13 +124,13 @@ const Scene = ({
         lerpFactor
       );
 
-      // So the camera can loop
+      // Clamp camera bounds at start and end
       if (newProgress > 1) {
         newProgress = 0;
         targetScrollProgress.current = 0;
       } else if (newProgress < 0) {
-        newProgress = 1;
-        targetScrollProgress.current = 1;
+        newProgress = 0;
+        targetScrollProgress.current = 0;
       }
 
       setscrollProgress(newProgress);

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./HeroOverlay.scss";
+import { useExperienceStore } from "../../stores/experienceStore";
 
 /* ── Countdown target date ── */
 const TARGET_DATE = new Date("2026-10-15T09:00:00");
@@ -23,12 +24,6 @@ function useCountdown(target) {
 }
 
 /* ── Inline SVG icons ── */
-const IconHome = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" />
-    <path d="M9 21V12h6v9" />
-  </svg>
-);
 const IconEvents = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="4" width="18" height="18" rx="2" />
@@ -68,33 +63,6 @@ const IconCompass = () => (
   </svg>
 );
 
-/* ── Left Side Nav ── */
-const NAV_ITEMS = [
-  { id: "HOME", Icon: IconHome },
-  { id: "EVENTS", Icon: IconEvents },
-  { id: "SCHEDULE", Icon: IconSchedule },
-  { id: "TEAM", Icon: IconTeam },
-  { id: "ABOUT", Icon: IconAbout },
-];
-
-const SideNav = () => {
-  const [active, setActive] = useState("HOME");
-  return (
-    <nav className="ho-sidenav" aria-label="Site navigation">
-      {NAV_ITEMS.map(({ id, Icon }) => (
-        <button
-          key={id}
-          className={"ho-sidenav__item" + (active === id ? " active" : "")}
-          onClick={() => setActive(id)}
-        >
-          <span className="ho-sidenav__icon"><Icon /></span>
-          <span>{id}</span>
-        </button>
-      ))}
-    </nav>
-  );
-};
-
 /* ── Countdown box ── */
 const CdBox = ({ value, label }) => (
   <div className="ho-cd-box">
@@ -132,17 +100,41 @@ const DragonZ = () => (
    ══════════════════════════════════════════ */
 const HeroOverlay = ({ visible = true }) => {
   const time = useCountdown(TARGET_DATE);
+  const { scrollProgress } = useExperienceStore();
+
   if (!visible) return null;
+
+  // Layer 1 & 2 progress interpolation over scroll forward into house (0.00 -> 0.12)
+  const p = Math.min(1, Math.max(0, scrollProgress / 0.12));
+
+  // Layer 1: Background blur & fog (reduces blur 10px->0px, opacity 1->0)
+  const blurPx = (1 - p) * 10;
+  const fogOpacity = 1 - p;
+
+  // Layer 2: Center Hero Content (fades out 1->0 when entering house, fades back 0->1 when scrolling out)
+  const heroOpacity = 1 - p;
+  const isHeroActive = heroOpacity > 0.01;
 
   return (
     <div className="ho-root">
+      {/* ── Layer 1: Background fog overlay (fogs the 3D scene, blur clears on scroll into house) ── */}
+      <div
+        className="ho-bg-fog"
+        style={{
+          opacity: fogOpacity,
+          backdropFilter: `blur(${blurPx}px) brightness(${0.75 + p * 0.25})`,
+          WebkitBackdropFilter: `blur(${blurPx}px) brightness(${0.75 + p * 0.25})`,
+        }}
+      />
 
-      {/* ── Left nav ── */}
-      <SideNav />
-
-      {/* ── Top-center title ── */}
-      <header className="ho-title-wrap">
-        <div className="ho-compass"><IconCompass /></div>
+      {/* ── Layer 2: Center Hero Content (fades out on scroll in, restores on scroll back) ── */}
+      <header
+        className="ho-title-wrap"
+        style={{
+          opacity: heroOpacity,
+          pointerEvents: isHeroActive ? "auto" : "none",
+        }}
+      >
         <h1 className="ho-title__zyverse">
           <span className="ho-dragon-z-mask" aria-label="Z" />
           <span>YVERSE</span>
@@ -166,7 +158,7 @@ const HeroOverlay = ({ visible = true }) => {
         </div>
       </header>
 
-      {/* ── Bottom nav panel ── */}
+      {/* ── Layer 3: Bottom Navigation (PERMANENTLY FIXED — NEVER DISAPPEARS) ── */}
       <nav className="ho-bottom-nav">
         <div className="ho-bottom-panel">
           {NAV_LINKS.map(({ id, Icon }) => (
