@@ -6,6 +6,7 @@
   width: 100%;
   overflow: hidden;
   z-index: 999;
+  background-color: #0c0a07;
 }
 
 .background-top-half,
@@ -13,7 +14,8 @@
   position: absolute;
   height: 50%;
   width: 100%;
-  background-color: rgb(11, 11, 11);
+  z-index: 2;
+  background-color: rgba(11, 11, 11, 0.28);
   transition: transform 1s ease-in-out 0.5s;
 }
 
@@ -34,17 +36,24 @@
 }
 
 .loading-screen-button {
-  background-color: #fff;
-  border: none;
-  border-radius: none;
-  padding: 10px 10px;
-  color: black;
+  min-width: 180px;
+  padding: 12px 22px;
+  border: 1px solid #c9a84c;
+  color: #f2df9a;
+  background: rgba(12, 10, 7, 0.76);
+  font-family: "Eagle Lake", Georgia, serif;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition: background-color 0.2s, color 0.2s, opacity 0.2s;
 
-  &:hover {
-    color: white;
-    background-color: rgb(11, 11, 11);
+  &.ready:hover {
+    color: #10100d;
+    background-color: #d8bc5d;
     cursor: pointer;
   }
+
+  &.waiting { opacity: 0.72; cursor: wait; }
 }
 
 .loading-screen-info-container {
@@ -57,7 +66,34 @@
   justify-content: center;
   align-items: center;
   gap: 24px;
+  z-index: 3;
 }
+
+.loading-screen-bg-video,
+.loading-screen-bg-tint {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.loading-screen-bg-video {
+  z-index: 0;
+  object-fit: cover;
+  object-position: center center;
+  pointer-events: none;
+}
+
+.loading-screen-bg-tint {
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at center,
+    rgba(8, 8, 8, 0.1),
+    rgba(0, 0, 0, 0.62)
+  );
+}
+
 
 .instructions-container {
   position: absolute;
@@ -84,29 +120,4 @@
   &.revealed {
     display: none;
   }
-}
-
-.loading-bar-container {
-  width: 350px;
-  height: 12px;
-  border: 2px solid #ffffff;
-}
-
-.loading-bar {
-  width: 0;
-  height: 100%;
-  background-color: #ffffff;
-  border: 1px solid black;
-  will-change: width;
-}
-
-.percentage {
-  font-size: 12px;
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  place-content: center;
-  justify-content: center;
-  align-items: center;
-  margin-top: 24px;
 }

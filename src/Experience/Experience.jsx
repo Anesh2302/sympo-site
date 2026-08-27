@@ -139,7 +139,10 @@ const Experience = () => {
 
   return (
     <>
-      <Canvas eventSource={document.getElementById("root")}>
+      <Canvas
+        frameloop={isExperienceReady ? "always" : "never"}
+        eventSource={document.getElementById("root")}
+      >
         <group ref={cameraGroup}>
           <PerspectiveCamera ref={camera} fov={52} makeDefault />
         </group>

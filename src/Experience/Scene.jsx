@@ -15,7 +15,7 @@ import Ninth from "./models/Ninth";
 import Tenth from "./models/Tenth";
 import Eleventh from "./models/Eleventh";
 import Bird from "./models/Bird";
-import Background from "./models/Background";
+import VideoBackdrop from "./components/VideoBackdrop";
 import {
   cameraCurve,
   DebugCurve,
@@ -80,6 +80,9 @@ const Scene = ({
   const timeRef = useRef(0);
 
   const { shouldRenderChunk } = useChunkedLoading();
+  const isExperienceReady = useExperienceStore(
+    (state) => state.isExperienceReady
+  );
 
   const getLerpedRotation = (progress) => {
     for (let i = 0; i < rotationTargets.length - 1; i++) {
@@ -191,14 +194,15 @@ const Scene = ({
     <>
       <LoadingManager />
 
-      <color attach="background" args={["#1b1a19"]} />
-      <fogExp2 attach="fog" color="#403e3e" density={0.0125} />
+      <fogExp2 attach="fog" color="#2e2a26" density={0.004} />
       {/* <DebugCurve curve={cameraCurve} /> */}
+
+      {/* Fullscreen landscape video backdrop: only loads after Enter World to avoid startup lag */}
+      {isExperienceReady && <VideoBackdrop />}
 
       <Suspense fallback={null}>
         <First />
         <Second />
-        <Background />
       </Suspense>
 
       {shouldRenderChunk(1) && (

@@ -75,6 +75,19 @@ const LoadingScreen = () => {
   return (
     <>
       <div className="loading-screen">
+        <video
+          className="loading-screen-bg-video"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          poster="/media/wukong-pin.jpg"
+          aria-hidden="true"
+        >
+          <source src="/media/wukong-pin-1080.mp4" type="video/mp4" />
+        </video>
+        <div className="loading-screen-bg-tint" />
         <div
           className={`background-top-half ${isRevealed ? "revealed" : ""}`}
           onTransitionEnd={handleAnimationFinished}
@@ -89,21 +102,13 @@ const LoadingScreen = () => {
             Slowly Drag or Scroll to Navigate
           </div>
 
-          {!isRevealed && !showEnterButton && (
-            <div className="loading-bar-container">
-              <div
-                className="loading-bar"
-                style={{ width: `${Math.min(displayedProgress, 100)}%` }}
-              ></div>
-              <div className="percentage">
-                {Math.min(displayedProgress, 100)}%
-              </div>
-            </div>
-          )}
-
-          {showEnterButton && (
-            <button className="loading-screen-button" onClick={handleReveal}>
-              &nbsp; &nbsp; &nbsp; Enter World &nbsp; &nbsp; &nbsp;
+          {!isRevealed && (
+            <button
+              className={`loading-screen-button ${showEnterButton ? "ready" : "waiting"}`}
+              onClick={handleReveal}
+              disabled={!showEnterButton}
+            >
+              {showEnterButton ? "Enter World" : "Loading…"}
             </button>
           )}
         </div>
