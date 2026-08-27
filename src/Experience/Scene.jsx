@@ -79,6 +79,16 @@ const Scene = ({
   );
   const timeRef = useRef(0);
 
+  // Cinematic intro flight after clicking Enter World.
+  const introStartRef = useRef(null);
+  const introDoneRef = useRef(false);
+  const INTRO_DURATION = 3.2;
+  // Dramatic exterior start point that sweeps down into the museum entry.
+  const introStart = new THREE.Vector3(6.58, 22, 78);
+
+  const easeInOutCubic = (x) =>
+    x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+
   const { shouldRenderChunk } = useChunkedLoading();
   const isExperienceReady = useExperienceStore(
     (state) => state.isExperienceReady
@@ -120,12 +130,32 @@ const Scene = ({
       const newPulseIntensity = (Math.sin(state.clock.elapsedTime * 3) + 1) / 2;
       setPulseIntensity(newPulseIntensity);
 
+      // Cinematic intro: advance the timeline after Enter World
+      let introT = 1;
+      if (isExperienceReady && !introDoneRef.current) {
+        if (introStartRef.current === null) {
+          introStartRef.current = state.clock.elapsedTime;
+        }
+        introT = (state.clock.elapsedTime - introStartRef.current) / INTRO_DURATION;
+        if (introT >= 1) {
+          introT = 1;
+          introDoneRef.current = true;
+        }
+      }
+      const inIntro = introT < 1;
+
       // Lerp to new position
       let newProgress = THREE.MathUtils.lerp(
         scrollProgress,
         targetScrollProgress.current,
         lerpFactor
       );
+
+      // During the intro, ignore user scroll so the cinematic plays cleanly.
+      if (inIntro) {
+        targetScrollProgress.current = 0;
+        newProgress = 0;
+      }
 
       // Clamp camera bounds at start and end
       if (newProgress > 1) {
@@ -139,23 +169,47 @@ const Scene = ({
       setscrollProgress(newProgress);
 
       // Lerp to new camera offset position
-      const basePoint = cameraCurve.getPoint(newProgress);
+      const basePoint = cameraCurve.getPoint(inIntro ? 0 : newProgress);
 
-      cameraGroup.current.position.x = THREE.MathUtils.lerp(
-        cameraGroup.current.position.x,
-        basePoint.x,
-        0.1
-      );
-      cameraGroup.current.position.y = THREE.MathUtils.lerp(
-        cameraGroup.current.position.y,
-        basePoint.y,
-        0.1
-      );
-      cameraGroup.current.position.z = THREE.MathUtils.lerp(
-        cameraGroup.current.position.z,
-        basePoint.z,
-        0.1
-      );
+      if (inIntro) {
+        // Cinematic fly-in: sweep from the exterior down into the entry point.
+        const e = easeInOutCubic(introT);
+        cameraGroup.current.position.x = THREE.MathUtils.lerp(
+          introStart.x,
+          basePoint.x,
+          e
+        );
+        cameraGroup.current.position.y = THREE.MathUtils.lerp(
+          introStart.y,
+          basePoint.y,
+          e
+        );
+        cameraGroup.current.position.z = THREE.MathUtils.lerp(
+          introStart.z,
+          basePoint.z,
+          e
+        );
+        // Keep the entry camera settled at the start of its own head-look.
+        camera.current.position.x = 0;
+        camera.current.position.y = 0;
+        camera.current.position.z = 0;
+      } else {
+        cameraGroup.current.position.x = THREE.MathUtils.lerp(
+          cameraGroup.current.position.x,
+          basePoint.x,
+          0.1
+        );
+        cameraGroup.current.position.y = THREE.MathUtils.lerp(
+          cameraGroup.current.position.y,
+          basePoint.y,
+          0.1
+        );
+        cameraGroup.current.position.z = THREE.MathUtils.lerp(
+          cameraGroup.current.position.z,
+          basePoint.z,
+          0.1
+        );
+      }
 
       camera.current.position.x = THREE.MathUtils.lerp(
         camera.current.position.x,
