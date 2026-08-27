@@ -85,6 +85,7 @@ const LoadingScreen = () => {
           poster="/media/wukong-pin.jpg"
           aria-hidden="true"
         >
+          <source src="/media/wukong-pin-4k-av1.mp4" type="video/mp4; codecs=av01.0.12M.08" />
           <source src="/media/wukong-pin-1080.mp4" type="video/mp4" />
         </video>
         <div className="loading-screen-bg-tint" />
