@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./LoadingScreen.scss";
+import IntroScene from "./IntroScene";
 import { useExperienceStore } from "../../stores/experienceStore.js";
 
 const LoadingScreen = () => {
@@ -8,6 +9,15 @@ const LoadingScreen = () => {
   const [displayedProgress, setDisplayedProgress] = useState(0);
   const [hasCompletedAnimation, setHasCompletedAnimation] = useState(false); // New state
   const animationRef = useRef(null);
+
+  // Safety net: never trap anyone on the loading screen. If chunk
+  // counting stalls (slow GPU, cached assets, WebGL hiccup), the
+  // Enter World button unlocks anyway after 12 seconds.
+  const [forceReady, setForceReady] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setForceReady(true), 12000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const {
     setIsExperienceReady,
@@ -67,28 +77,19 @@ const LoadingScreen = () => {
   // Without visual jump to 100 it'd show the enter button when it's done loading.
   // I want it to go to 100 THEN show the enter button not jump to it when it's done.
   const showEnterButton =
-    !isExperienceLoading &&
-    loadedChunks >= totalChunks &&
-    hasCompletedAnimation &&
-    !isRevealed;
+    (!isExperienceLoading &&
+      loadedChunks >= totalChunks &&
+      hasCompletedAnimation) ||
+    forceReady;
 
   return (
     <>
       <div className="loading-screen">
-        <video
-          className="loading-screen-bg-video"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          poster="/media/wukong-pin.jpg"
-          aria-hidden="true"
-        >
-          <source src="/media/wukong-pin-4k-av1.mp4" type="video/mp4; codecs=av01.0.12M.08" />
-          <source src="/media/wukong-pin-1080.mp4" type="video/mp4" />
-        </video>
+        {/* "House of the Dragons" 3D intro scene — replaces the Wukong video */}
+        <IntroScene />
         <div className="loading-screen-bg-tint" />
+        {/* Occasional storm flash over the intro scene */}
+        <div className="loading-screen-flash" />
         <div
           className={`background-top-half ${isRevealed ? "revealed" : ""}`}
           onTransitionEnd={handleAnimationFinished}
@@ -97,6 +98,19 @@ const LoadingScreen = () => {
           className={`background-bottom-half ${isRevealed ? "revealed" : ""}`}
         ></div>
         <div className="loading-screen-info-container">
+          <div className={`ls-title ${isRevealed ? "revealed" : ""}`}>
+            <h1 className="ls-title__main">ZYVERSE</h1>
+            <div className="ls-title__year">
+              <span className="ls-title__diamond">◆</span>
+              <span className="ls-title__year-text">2K26</span>
+              <span className="ls-title__diamond">◆</span>
+            </div>
+            <p className="ls-title__dept">Dept. of Cybersecurity</p>
+            <p className="ls-title__college">
+              SRM Valliammai Engineering College
+            </p>
+          </div>
+
           <div
             className={`instructions-container ${isRevealed ? "revealed" : ""}`}
           >
@@ -109,7 +123,9 @@ const LoadingScreen = () => {
               onClick={handleReveal}
               disabled={!showEnterButton}
             >
-              {showEnterButton ? "Enter World" : "Loading…"}
+              {showEnterButton
+                ? "Enter World"
+                : `Loading… ${displayedProgress}%`}
             </button>
           )}
         </div>

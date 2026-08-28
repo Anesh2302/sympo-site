@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { useLayoutEffect, useRef, useEffect } from "react";
-import { extend, useLoader } from "@react-three/fiber";
+import { extend, useLoader, useFrame } from "@react-three/fiber";
 
 // Fire shader credits to drcmda
 // See here: https://codesandbox.io/p/sandbox/3878x
@@ -169,7 +169,7 @@ class FireMaterial extends THREE.ShaderMaterial {
 
 extend({ FireMaterial });
 
-function FireElement({ color, time, ...props }) {
+export function FireElement({ color, time, ...props }) {
   const meshRef = useRef();
   const materialRef = useRef();
   const texture = useLoader(THREE.TextureLoader, "/images/fire.png");
@@ -193,10 +193,20 @@ function FireElement({ color, time, ...props }) {
     const invModelMatrix = materialRef.current.uniforms.invModelMatrix.value;
     meshRef.current.updateMatrixWorld();
     invModelMatrix.copy(meshRef.current.matrixWorld).invert();
-    materialRef.current.uniforms.time.value = time;
+    if (time !== undefined) {
+      materialRef.current.uniforms.time.value = time;
+    }
     materialRef.current.uniforms.invModelMatrix.value = invModelMatrix;
     materialRef.current.uniforms.scale.value = meshRef.current.scale;
   }, [time]);
+
+  // When no external `time` prop is provided (e.g. the intro/loading scene),
+  // the fire animates itself using the local canvas clock instead.
+  useFrame((state) => {
+    if (time === undefined && materialRef.current) {
+      materialRef.current.uniforms.time.value = state.clock.elapsedTime;
+    }
+  });
 
   return (
     <mesh ref={meshRef} {...props} renderOrder={1}>

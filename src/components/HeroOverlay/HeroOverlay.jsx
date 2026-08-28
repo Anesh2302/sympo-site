@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./HeroOverlay.scss";
 import { useExperienceStore } from "../../stores/experienceStore";
+import { useRegisterStore } from "../../stores/useRegisterStore";
 
 /* ── Countdown target date ── */
 const TARGET_DATE = new Date("2026-10-15T09:00:00");
@@ -71,8 +72,16 @@ const CdBox = ({ value, label }) => (
   </div>
 );
 
+const IconRegister = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
+  </svg>
+);
+
 /* ── Bottom nav items ── */
 const NAV_LINKS = [
+  { id: "REGISTER", Icon: IconRegister },
   { id: "EVENTS", Icon: IconEvents },
   { id: "SCHEDULE", Icon: IconSchedule },
   { id: "TEAM", Icon: IconTeam },
@@ -101,6 +110,7 @@ const DragonZ = () => (
 const HeroOverlay = ({ visible = true }) => {
   const time = useCountdown(TARGET_DATE);
   const { scrollProgress } = useExperienceStore();
+  const openRegister = useRegisterStore((state) => state.openRegister);
 
   if (!visible) return null;
 
@@ -162,7 +172,11 @@ const HeroOverlay = ({ visible = true }) => {
       <nav className="ho-bottom-nav">
         <div className="ho-bottom-panel">
           {NAV_LINKS.map(({ id, Icon }) => (
-            <button key={id} className="ho-bottom-panel__item">
+            <button
+              key={id}
+              className="ho-bottom-panel__item"
+              onClick={id === "REGISTER" ? openRegister : undefined}
+            >
               <span className="ho-bottom-panel__icon"><Icon /></span>
               <span className="ho-bottom-panel__label">{id}</span>
             </button>

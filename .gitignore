@@ -12,6 +12,16 @@ dist
 dist-ssr
 *.local
 
+# Local registration data (dev fallback storage)
+/data
+
+# Original source video (too big for git)
+/Fantasy_Warrior_Scene_*.mp4
+
+# Environment keys (Supabase / admin)
+.env
+.env.*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

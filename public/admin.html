@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZYVERSE 2K26 — Registrations Admin</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 24px;
+      background: #0c0a07; color: #e8d9a8;
+      font-family: Georgia, "IM Fell English", serif;
+    }
+    h1 { font-family: "Eagle Lake", Georgia, serif; color: #c9a84c; font-size: 20px; letter-spacing: .14em; text-transform: uppercase; }
+    #keyrow { display: flex; gap: 8px; margin: 14px 0 18px; flex-wrap: wrap; }
+    #key {
+      background: rgba(0,0,0,.45); border: 1px solid rgba(201,168,76,.4);
+      color: #f2df9a; padding: 9px 12px; min-width: 260px; font: inherit;
+    }
+    button {
+      background: #c9a84c; border: none; color: #10100d;
+      font-family: "Eagle Lake", Georgia, serif; font-size: 11px;
+      letter-spacing: .14em; text-transform: uppercase;
+      padding: 10px 18px; cursor: pointer;
+    }
+    button.ghost { background: transparent; border: 1px solid rgba(201,168,76,.55); color: #c9a84c; }
+    table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+    th, td { border: 1px solid rgba(201,168,76,.25); padding: 7px 9px; text-align: left; vertical-align: top; }
+    th { background: rgba(201,168,76,.12); color: #c9a84c; letter-spacing: .08em; text-transform: uppercase; font-size: 10px; }
+    tr:nth-child(even) td { background: rgba(255,255,255,.02); }
+    .tag { display: inline-block; padding: 1px 7px; border: 1px solid rgba(201,168,76,.45); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+    .tag.group { color: #ffce7a; }
+    #out p { color: rgba(210,188,135,.85); }
+    a { color: #c9a84c; }
+  </style>
+</head>
+<body>
+  <h1>🐉 ZYVERSE 2K26 — Registrations</h1>
+  <div id="keyrow">
+    <input id="key" placeholder="Admin key" value="zyverse2026" />
+    <button onclick="load()">Load</button>
+    <button class="ghost" onclick="csv()">⬇ Export CSV</button>
+  </div>
+  <div id="out">Enter the admin key and press Load.</div>
+
+  <script>
+    let ROWS = [];
+
+    const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    // Rows can come flattened (Supabase) or nested (local JSON store)
+    const pick = (r, k, nest) => r[nest] ? (r[nest][k] ?? "") : (r[k] ?? "");
+    const name_ = (r) => (r.leader ? r.leader.name : r.leader_name);
+    const email = (r) => (r.leader ? r.leader.email : r.email);
+    const phone = (r) => (r.leader ? r.leader.phone : r.phone);
+    const college = (r) => (r.leader ? r.leader.college : r.college);
+    const dept = (r) => (r.leader ? r.leader.dept : r.dept);
+    const year = (r) => (r.leader ? r.leader.year : r.year);
+    const membersOf = (r) => (Array.isArray(r.members) ? r.members : []);
+
+    async function load() {
+      const out = document.getElementById("out");
+      out.textContent = "Loading…";
+      try {
+        const res = await fetch("/api/registrations?key=" + encodeURIComponent(document.getElementById("key").value.trim()));
+        const data = await res.json();
+        if (!data.ok) { out.textContent = "⛔ " + (data.error || "Request failed"); return; }
+        ROWS = data.registrations || [];
+
+        let html = `<p><strong>${data.count}</strong> registration(s) — solo + group combined.</p>
+        <table><thead><tr>
+          <th>Pass ID</th><th>Type</th><th>Team</th><th>Name</th><th>Email</th><th>Phone</th>
+          <th>College</th><th>Dept</th><th>Year</th><th>Events</th><th>Members</th><th>Registered At</th>
+        </tr></thead><tbody>`;
+        for (const r of ROWS) {
+          const mem = membersOf(r).map((m) => esc(m.name) + (m.dept ? ` (${esc(m.dept)})` : "")).join("<br>") || "—";
+          const evs = (r.events || []).map(esc).join(", ") || "—";
+          html += `<tr>
+            <td><strong>${esc(r.id)}</strong></td>
+            <td><span class="tag ${r.type}">${esc(r.type)}</span></td>
+            <td>${esc(r.team_name || "—")}</td>
+            <td>${esc(name_(r))}</td>
+            <td>${esc(email(r))}</td>
+            <td>${esc(phone(r))}</td>
+            <td>${esc(college(r) || "—")}</td>
+            <td>${esc(dept(r) || "—")}</td>
+            <td>${esc(year(r) || "—")}</td>
+            <td>${evs}</td>
+            <td>${mem}</td>
+            <td>${esc((r.created_at || "").replace("T", " ").slice(0, 19))}</td>
+          </tr>`;
+        }
+        out.innerHTML = html + "</tbody></table>";
+      } catch (e) {
+        out.textContent = "⛔ " + String(e);
+      }
+    }
+
+    function csv() {
+      if (!ROWS.length) { alert("Load the data first."); return; }
+      const head = ["id", "type", "team_name", "leader_name", "email", "phone", "college", "dept", "year", "events", "members", "created_at"];
+      const lines = [head.join(",")];
+      for (const r of ROWS) {
+        const mem = membersOf(r).map((m) => m.name).join(" | ");
+        const row = [r.id, r.type, r.team_name || "", name_(r), email(r), phone(r), college(r) || "", dept(r) || "", year(r) || "", (r.events || []).join(" | "), mem, r.created_at];
+        lines.push(row.map((v) => '"' + String(v ?? "").replace(/"/g, '""') + '"').join(","));
+      }
+      const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "zyverse2k26-registrations.csv";
+      a.click();
+    }
+
+    load();
+  </script>
+</body>
+</html>
