@@ -74,6 +74,10 @@
 
 .loading-screen-info-container {
   position: absolute;
+  /* Anchor to the parent's top — the in-flow 3D canvas wrapper would
+     otherwise push this panel's static position below the viewport. */
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   display: flex;
@@ -84,7 +88,7 @@
   gap: 24px;
   z-index: 3;
   /* Push the title + button below the 3D dragon-Z sigil */
-  padding-top: 34vh;
+  padding-top: 30vh;
 }
 
 .loading-screen-bg-video,
