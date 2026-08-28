@@ -45,6 +45,7 @@ export default function RegisterOverlay() {
         </button>
 
         <header className="reg-head">
+          <span className="reg-head__sigil" aria-hidden="true" />
           <h2>Register</h2>
           <p>ZYVERSE 2K26 — National Level Technical Symposium</p>
         </header>

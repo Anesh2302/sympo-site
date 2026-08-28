@@ -1,75 +1,97 @@
+/* ═══════════════════════════════════════════════════════════════
+   Modal — Valyrian stone & gold (matches the registration panel)
+   ═══════════════════════════════════════════════════════════════ */
+
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(12, 12, 12, 0.8);
-  backdrop-filter: blur(3px);
+  inset: 0;
+  z-index: 9999;
+  background: rgba(8, 6, 3, 0.85);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  padding: 20px;
 }
 
 .modal-container {
   position: relative;
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
+  width: min(620px, 94vw);
+  max-height: 88vh;
   overflow: hidden;
-  background: transparent;
   display: flex;
   flex-direction: column;
-  border: 1px solid #f1f1f1;
+  background: rgba(15, 12, 7, 0.97);
+  border: 1px solid rgba(201, 168, 76, 0.5);
+  box-shadow:
+    0 0 40px rgba(201, 168, 76, 0.15),
+    inset 0 0 40px rgba(0, 0, 0, 0.45);
+  color: #e8d9a8;
+  font-family: "IM Fell English", Georgia, serif;
 }
 
 .modal-back-button {
   position: absolute;
-  top: 26px;
-  right: 28px;
+  top: 12px;
+  right: 14px;
   background: none;
   border: none;
-  color: #f1f1f1;
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-  font-weight: 500;
+  color: rgba(201, 168, 76, 0.7);
+  font-size: 17px;
   cursor: pointer;
-  padding: 8px 12px;
-  transition: background-color 0.2s;
+  padding: 6px 10px;
+  transition: color 0.2s;
   z-index: 1;
 
-  svg {
-    stroke-width: 6px;
-  }
-
   &:hover {
-    text-decoration: underline;
+    color: #f2df9a;
   }
 }
 
 .modal-content {
-  padding: 40px 40px;
+  padding: 36px 38px;
   overflow-y: auto;
-  color: #f1f1f1;
 }
 
 .modal-title {
-  font-size: 18px;
-  margin-bottom: 24px;
-  color: #f1f1f1;
-  position: relative;
+  margin: 0 0 14px;
+  font-family: "Eagle Lake", "Palatino Linotype", serif;
+  font-size: clamp(20px, 3.2vw, 28px);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  line-height: 1.25;
+  background: linear-gradient(
+    180deg,
+    #ede0c4 0%,
+    #c8b88a 30%,
+    #9a8055 60%,
+    #c9a84c 82%,
+    #e8cc70 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.modal-divider {
+  height: 1px;
+  margin-bottom: 18px;
+  background: linear-gradient(
+    to right,
+    rgba(201, 168, 76, 0.55),
+    transparent
+  );
 }
 
 .modal-paragraphs {
-  margin-bottom: 30px;
+  margin-bottom: 18px;
 
   p {
-    margin-bottom: 16px;
-    line-height: 1.6;
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 14px;
+    line-height: 1.8;
+    font-size: 13.5px;
+    color: rgba(232, 217, 168, 0.9);
 
     &:last-child {
       margin-bottom: 0;
@@ -77,29 +99,68 @@
   }
 }
 
-.modal-link {
+.modal-items {
+  list-style: none;
+  margin: 0 0 22px;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+
+  li {
+    padding: 12px 14px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(201, 168, 76, 0.25);
+  }
+
+  &__label {
+    display: block;
+    margin-bottom: 4px;
+    font-family: "Eagle Lake", serif;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #c9a84c;
+  }
+
+  &__text {
+    display: block;
+    font-size: 13px;
+    line-height: 1.65;
+    color: rgba(232, 217, 168, 0.85);
+  }
+}
+
+.modal-cta {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  color: #f1f1f1;
-  text-decoration: none;
-  border: 1px solid #f1f1f1;
-  font-weight: 600;
+  gap: 10px;
+  padding: 13px 26px;
+  background: #c9a84c;
+  border: 1px solid #c9a84c;
+  color: #10100d;
+  font-family: "Eagle Lake", serif;
   font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
 
   &:hover {
-    background: linear-gradient(90deg, #715116, #a93e1b);
-    box-shadow: 0 4px 20px rgba(58, 134, 255, 0.3);
+    background: #d8bc5d;
 
     svg {
       transform: translateX(3px);
     }
   }
+
+  svg {
+    transition: transform 0.2s;
+  }
 }
 
 @media (max-width: 768px) {
   .modal-content {
-    padding: 40px 22px;
+    padding: 30px 22px;
   }
 }

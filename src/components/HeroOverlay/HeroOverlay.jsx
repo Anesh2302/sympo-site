@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./HeroOverlay.scss";
 import { useExperienceStore } from "../../stores/experienceStore";
 import { useRegisterStore } from "../../stores/useRegisterStore";
+import { useModalStore } from "../../stores/useModalStore";
 
 /* ── Countdown target date ── */
 const TARGET_DATE = new Date("2026-10-15T09:00:00");
@@ -81,11 +82,11 @@ const IconRegister = () => (
 
 /* ── Bottom nav items ── */
 const NAV_LINKS = [
-  { id: "REGISTER", Icon: IconRegister },
-  { id: "EVENTS", Icon: IconEvents },
-  { id: "SCHEDULE", Icon: IconSchedule },
-  { id: "TEAM", Icon: IconTeam },
-  { id: "ABOUT", Icon: IconAbout },
+  { id: "REGISTER", Icon: IconRegister, modal: null },
+  { id: "EVENTS", Icon: IconEvents, modal: "events" },
+  { id: "SCHEDULE", Icon: IconSchedule, modal: "schedule" },
+  { id: "TEAM", Icon: IconTeam, modal: "zyverse_team" },
+  { id: "ABOUT", Icon: IconAbout, modal: "about" },
 ];
 
 /* ── Dragon-Z component using official logo ── */
@@ -111,6 +112,7 @@ const HeroOverlay = ({ visible = true }) => {
   const time = useCountdown(TARGET_DATE);
   const { scrollProgress } = useExperienceStore();
   const openRegister = useRegisterStore((state) => state.openRegister);
+  const { openModal, setModalID } = useModalStore();
 
   if (!visible) return null;
 
@@ -171,11 +173,18 @@ const HeroOverlay = ({ visible = true }) => {
       {/* ── Layer 3: Bottom Navigation (PERMANENTLY FIXED — NEVER DISAPPEARS) ── */}
       <nav className="ho-bottom-nav">
         <div className="ho-bottom-panel">
-          {NAV_LINKS.map(({ id, Icon }) => (
+          {NAV_LINKS.map(({ id, Icon, modal }) => (
             <button
               key={id}
               className="ho-bottom-panel__item"
-              onClick={id === "REGISTER" ? openRegister : undefined}
+              onClick={() => {
+                if (id === "REGISTER") {
+                  openRegister();
+                } else if (modal) {
+                  setModalID(modal);
+                  openModal();
+                }
+              }}
             >
               <span className="ho-bottom-panel__icon"><Icon /></span>
               <span className="ho-bottom-panel__label">{id}</span>

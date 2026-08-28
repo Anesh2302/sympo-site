@@ -1,15 +1,13 @@
 import React, { useEffect, useRef } from "react";
 import "./Modal.scss";
 import { useModalStore } from "../../stores/useModalStore";
+import { useRegisterStore } from "../../stores/useRegisterStore";
 import { modalContent } from "../../data/modalContent";
 
 const Modal = () => {
   const { isModalOpen, modalID, closeModal } = useModalStore();
+  const openRegister = useRegisterStore((state) => state.openRegister);
   const modalRef = useRef(null);
-
-  const handleClose = () => {
-    closeModal();
-  };
 
   useEffect(() => {
     const handleEscapeKey = (e) => {
@@ -56,28 +54,27 @@ const Modal = () => {
 
   if (!isModalOpen || !modalContent[modalID]) return null;
 
-  const { title, link, linkText, paragraphs } = modalContent[modalID];
+  const { title, link, linkText, paragraphs, items, action } =
+    modalContent[modalID];
+
+  const handleCta = (e) => {
+    if (action === "register") {
+      e.preventDefault();
+      closeModal();
+      openRegister();
+    }
+  };
 
   return (
     <div className="modal-overlay">
       <div className="modal-container" ref={modalRef}>
-        <button className="modal-back-button" onClick={handleClose}>
-          <svg
-            width="20"
-            height="20"
-            class=""
-            viewBox="0 0 130 134"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M128.986 128.986L1 1" stroke="currentColor" />
-            <path d="M128.986 128.986L1 1" stroke="currentColor" />
-            <path d="M1 132.986L128.986 5" stroke="currentColor" />
-          </svg>
+        <button className="modal-back-button" onClick={handleClose} aria-label="Close">
+          ✕
         </button>
 
         <div className="modal-content">
           <h2 className="modal-title">{title}</h2>
+          <div className="modal-divider" />
 
           <div className="modal-paragraphs">
             {paragraphs.map((paragraph, index) => (
@@ -85,14 +82,34 @@ const Modal = () => {
             ))}
           </div>
 
-          <a
-            href={link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="modal-link"
-          >
-            {linkText}
-          </a>
+          {items && items.length > 0 && (
+            <ul className="modal-items">
+              {items.map((item, index) => (
+                <li key={index}>
+                  {item.label && (
+                    <span className="modal-items__label">{item.label}</span>
+                  )}
+                  <span className="modal-items__text">{item.text}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {linkText && (
+            <a
+              href={link}
+              target={action === "register" ? undefined : "_blank"}
+              rel="noopener noreferrer"
+              className="modal-cta"
+              onClick={handleCta}
+            >
+              {linkText}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
+            </a>
+          )}
         </div>
       </div>
     </div>
