@@ -5,6 +5,7 @@ import Modal from "./components/Modal/Modal";
 import LoadingScreen from "./components/LoadingScreen/LoadingScreen";
 import HeroOverlay from "./components/HeroOverlay/HeroOverlay";
 import RegisterOverlay from "./components/Register/RegisterOverlay";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { useExperienceStore } from "./stores/experienceStore";
 import { useRegisterStore } from "./stores/useRegisterStore";
 
@@ -23,9 +24,15 @@ function App() {
   return (
     <>
       <LoadingScreen />
-      <HeroOverlay visible={isExperienceReady} />
-      <Modal />
-      <RegisterOverlay />
+      <ErrorBoundary>
+        <HeroOverlay visible={isExperienceReady} />
+      </ErrorBoundary>
+      <ErrorBoundary>
+        <Modal />
+      </ErrorBoundary>
+      <ErrorBoundary>
+        <RegisterOverlay />
+      </ErrorBoundary>
       <Experience />
     </>
   );

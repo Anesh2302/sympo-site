@@ -57,6 +57,10 @@ const Modal = () => {
   const { title, link, linkText, paragraphs, items, action } =
     modalContent[modalID];
 
+  const handleClose = () => {
+    closeModal();
+  };
+
   const handleCta = (e) => {
     if (action === "register") {
       e.preventDefault();
