@@ -5,7 +5,7 @@ import * as THREE from "three";
 /**
  * Fullscreen landscape video backdrop.
  *
- * Renders the landscape video (`wukong-enter-bg-1080.mp4`, 1920x1080) on a large
+ * Renders the supplied landscape video on a large
  * flat plane placed behind the whole museum along the camera's view axis. The
  * plane is sized to cover any monitor aspect ratio, so the landscape fills the
  * screen centered behind the 3D world — matching the original flat-backdrop
@@ -15,7 +15,7 @@ import * as THREE from "three";
  * so it doesn't slow down the initial page load.
  */
 export default function VideoBackdrop({
-  src = "/media/wukong-enter-bg-1080.mp4",
+  src = "/media/Fantasy_Warrior_Scene_A_close-up_on_a_highly_detailed_animated_monkey_PiyeZpVD.mp4",
   position = [0, 20, -420],
   rotationY = Math.PI,
   width = 1600,
