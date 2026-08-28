@@ -5,6 +5,7 @@ Command: npx gltfjsx@6.5.3 Ninth.glb
 
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useGLTFWithKTX2 } from "../utils/useGLTFWithKTX2";
+import { convertMaterialsToBasic } from "../utils/convertToBasic";
 import * as THREE from "three";
 import { useModalStore } from "../../stores/useModalStore";
 import { useTexture } from "@react-three/drei";
@@ -102,9 +103,14 @@ const WallEmblemItem = ({
 };
 
 export default function Model({ progress = 0, pulseIntensity = 0, ...props }) {
-  const { nodes } = useGLTFWithKTX2("/models/Ninth.glb");
+  const { nodes, materials } = useGLTFWithKTX2("/models/Ninth.glb");
   const [hoveredMesh, setHoveredMesh] = useState(null);
   const { openModal, setModalID, isModalOpen } = useModalStore();
+
+  const newMaterials = useMemo(
+    () => convertMaterialsToBasic(materials),
+    [materials]
+  );
 
   useEffect(() => {
     if (progress <= 0.399 || progress >= 0.6 || isModalOpen) return;
@@ -174,7 +180,12 @@ export default function Model({ progress = 0, pulseIntensity = 0, ...props }) {
           handleClick={handleClick}
         />
       ))}
-      {/* Welcome parchment on the desk, redrawn with SRM VEC welcome text */}
+      {/* Welcome desk (original baked podium) with the SRM VEC parchment laid on top */}
+      <mesh
+        geometry={nodes.Ninth_Paper_Baked.geometry}
+        material={newMaterials["Ninth_real_actual_Baked"]}
+        position={[6.122, 6.808, -35.966]}
+      />
       <PaperNote
         geometry={nodes.Ninth_Paper_Baked.geometry}
         position={[6.122, 6.808, -35.966]}

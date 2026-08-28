@@ -1,8 +1,8 @@
 /*
- * PaperNote - redraws the baked welcome parchment (Ninth_Paper_Baked) with
- * Zyverse / SRM VEC welcome text. The original text is baked into the model's
- * KTX2 atlas, so instead we generate a parchment texture on a 2D canvas and
- * remap the mesh's UV sub-rect onto it.
+ * PaperNote - the original welcome parchment ("Codrops Museum") is baked into
+ * the desk model's texture, so we cover the podium's top plate with a plane
+ * carrying a canvas-drawn parchment (SRM VEC welcome text, Eagle Lake font).
+ * The plate's position/size is measured at runtime from the decoded geometry.
  */
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
@@ -137,60 +137,47 @@ function drawParchment(canvas) {
 }
 
 export default function PaperNote({ geometry, position }) {
-  const { material, texture, canvas } = useMemo(() => {
-    // 1) Find the UV sub-rect this mesh uses inside the shared baked atlas
-    let uMin = 0,
-      uMax = 1,
-      vMin = 0,
-      vMax = 1;
-    const uv = geometry?.attributes?.uv;
-    if (uv) {
-      uMin = uMax = uv.getX(0);
-      vMin = vMax = uv.getY(0);
-      const scan = (i) => {
-        const u = uv.getX(i);
-        const v = uv.getY(i);
-        if (u < uMin) uMin = u;
-        if (u > uMax) uMax = u;
-        if (v < vMin) vMin = v;
-        if (v > vMax) vMax = v;
-      };
-      const index = geometry.index;
-      if (index) {
-        for (let i = 0; i < index.count; i++) scan(index.getX(i));
-      } else {
-        for (let i = 0; i < uv.count; i++) scan(i);
-      }
-      // small inset so we never bleed into neighbouring atlas art
-      const padU = (uMax - uMin) * 0.015;
-      const padV = (vMax - vMin) * 0.015;
-      uMin += padU;
-      uMax -= padU;
-      vMin += padV;
-      vMax -= padV;
-      if (uMax - uMin <= 0.001 || vMax - vMin <= 0.001) {
-        uMin = 0;
-        uMax = 1;
-        vMin = 0;
-        vMax = 1;
+  const { material, texture, canvas, width, depth, top, cx, cz } = useMemo(() => {
+    // 1) Locate the podium's top plate from the decoded mesh geometry:
+    //    the vertices in the top 4% of the mesh's height form its top surface.
+    geometry?.computeBoundingBox?.();
+    const bb = geometry?.boundingBox ?? new THREE.Box3();
+    const cutoff = bb.max.y - (bb.max.y - bb.min.y) * 0.04;
+    const posAttr = geometry?.attributes?.position;
+    let minX = Infinity,
+      maxX = -Infinity,
+      minZ = Infinity,
+      maxZ = -Infinity,
+      found = 0;
+    if (posAttr) {
+      for (let i = 0; i < posAttr.count; i++) {
+        if (posAttr.getY(i) >= cutoff) {
+          const x = posAttr.getX(i);
+          const z = posAttr.getZ(i);
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (z < minZ) minZ = z;
+          if (z > maxZ) maxZ = z;
+          found++;
+        }
       }
     }
+    if (!found) {
+      minX = bb.min.x;
+      maxX = bb.max.x;
+      minZ = bb.min.z;
+      maxZ = bb.max.z;
+    }
+    // sane caps in case a stray tall vertex stretches the cluster
+    const width = THREE.MathUtils.clamp(maxX - minX, 0.4, 4);
+    const depth = THREE.MathUtils.clamp(maxZ - minZ, 0.4, 4);
+    const cx = (minX + maxX) / 2;
+    const cz = (minZ + maxZ) / 2;
+    const top = bb.max.y;
 
-    // 2) Size the canvas to the paper's real-world aspect ratio
-    geometry?.computeBoundingBox?.();
-    const size = new THREE.Vector3();
-    geometry?.boundingBox?.getSize(size);
-    const dims = [size.x, size.y, size.z]
-      .filter((d) => d > 1e-4)
-      .sort((a, b) => b - a);
-    const aspect = THREE.MathUtils.clamp(
-      dims.length >= 2 ? dims[0] / dims[1] : 0.75,
-      0.55,
-      0.95
-    );
+    // 2) Canvas sized to the plate's real aspect ratio
     const W = 1024;
-    const H = THREE.MathUtils.clamp(Math.round(W / aspect), 640, 2048);
-
+    const H = THREE.MathUtils.clamp(Math.round((W * depth) / width), 512, 2048);
     const canvas = document.createElement("canvas");
     canvas.width = W;
     canvas.height = H;
@@ -198,17 +185,10 @@ export default function PaperNote({ geometry, position }) {
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
-    texture.flipY = false; // match glTF atlas UV convention
     texture.anisotropy = 8;
-    texture.wrapS = THREE.ClampToEdgeWrapping;
-    texture.wrapT = THREE.ClampToEdgeWrapping;
-    // remap the atlas sub-rect onto the full canvas
-    texture.repeat.set(1 / (uMax - uMin), 1 / (vMax - vMin));
-    texture.offset.set(-uMin * texture.repeat.x, -vMin * texture.repeat.y);
-
     const material = new THREE.MeshBasicMaterial({ map: texture });
 
-    return { material, texture, canvas };
+    return { material, texture, canvas, width, depth, top, cx, cz };
   }, [geometry]);
 
   // Redraw once the decorative webfont has actually loaded
@@ -230,7 +210,7 @@ export default function PaperNote({ geometry, position }) {
     return () => {
       cancelled = true;
     };
-  }, [texture]);
+  }, [texture, canvas]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -240,5 +220,16 @@ export default function PaperNote({ geometry, position }) {
     };
   }, [texture, material]);
 
-    return <mesh geometry={geometry} position={position} material={material} />;
+  // A thin plane hovering just above the podium's top plate (like the
+  // wall emblems: an overlay on top of the baked desk, hiding the old note)
+  return (
+    <group
+      position={[position[0] + cx, position[1] + top + 0.015, position[2] + cz]}
+    >
+      <mesh rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[width * 1.02, depth * 1.02]} />
+        <primitive object={material} attach="material" />
+      </mesh>
+    </group>
+  );
 }
